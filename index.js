@@ -1,10 +1,13 @@
+require('dotenv').config(); // Load environment variables from .env file
 const express = require('express')  // Importing express
 const app = express()   // Creating an instance of express
 const mongoose = require('mongoose')  // Importing mongoose
-const Product = require('./model/product.model'); // Importing product model
+const productRoute = require('./routes/product.route'); // Importing product routes
+const Product = require('./model/product.model')
 
 // Middleware to parse JSON requests
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // Middleware to parse URL-encoded data
 
 
 // Basic route to check if the server is running
@@ -13,29 +16,20 @@ app.listen(8000, () => {
 });
 
 
-// Middleware to enable CORS
+// 
 app.get('/', (req, res) => {
     res.send("Hello From Node API Server")
 });
 
+// Product routes
+app.use('/api/products', productRoute)
 
-// Create a new product
-app.post('/api/products', async (req, res) => {
-    try {   // Validate the request body
-        console.log(req.body);
-        const product = await Product.create(req.body); // Create a new product using the Product model
-        res.status(200).json(product); // Respond with the created product
-    }
-    catch (error) { // Handle any errors that occur during product creation
-        res.status(500).json({ message: error.message }); // Respond with an error message
-    }
-});
 
 // Connect to MongoDB
-mongoose.connect("mongodb+srv://admin:mlUUXIWBStBZ7rzB@cruddb.ga8rwvy.mongodb.net/Node-API?retryWrites=true&w=majority&appName=CrudDB")
+mongoose.connect(process.env.MONGO_URI)
     .then(() => {
-        console.log("Connected To Database !");
+        console.log("Connected To Database !"); // Log a message when the connection is successful
     })
     .catch(() => {
-        console.log("Connection Failed !");
+        console.log("Connection Failed !"); // Log a message when the connection fails
     });
